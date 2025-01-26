@@ -1,0 +1,17 @@
+{
+    "id": "jellyfish",
+    "name": "해파리",
+    "speed": 1,
+    "adaptation": 0,
+    "type": 3,
+    "sacrifice": [],
+    "defence": 0,
+    "health": 2,
+    "skill": [
+        {
+            "name": "공격",
+            "desc": "적에게 1의 피해를 준다.",
+            "bp": 1
+        }
+    ]
+}

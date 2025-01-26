@@ -1,0 +1,22 @@
+{
+    "id": "snake",
+    "name": "뱀",
+    "speed": 0,
+    "adaptation": 0,
+    "type": 1,
+    "sacrifice": [],
+    "defence": 0,
+    "health": 4,
+    "skill": [
+        {
+            "name": "물기",
+            "desc": "단일 대상에게 2의 피해를 주고 [출혈] 1|1, [중독] 1|2 부여",
+            "bp": 1
+        },
+        {
+            "name": "회피 자세",
+            "desc": "이번 턴에 [방어력] 3 얻음",
+            "bp": 1
+        }
+    ]
+}

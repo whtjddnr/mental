@@ -1,0 +1,16 @@
+{
+    "id": "test",
+    "name": "테스트 더미",
+    "speed": 3,
+    "adaptation": 0,
+    "type": 1,
+    "sacrifice": [],
+    "defence": 0,
+    "health": 15,
+    "skill": [
+        {
+            "name": "공격",
+            "desc": "적에게 1의 피해를 준다."
+        }
+    ]
+}

@@ -1,0 +1,22 @@
+{
+    "id": "fish",
+    "name": "활어",
+    "speed": 1,
+    "adaptation": 0,
+    "type": 3,
+    "sacrifice": [],
+    "defence": 0,
+    "health": 2,
+    "skill": [
+        {
+            "name": "꼬리치기",
+            "desc": "적에게 1의 피해를 준다.",
+            "bp": 1
+        },
+        {
+            "name": "잠수",
+            "desc": "자신은 방어력 2를 얻는다.",
+            "bp": 1
+        }
+    ]
+}

@@ -1,0 +1,18 @@
+{
+    "id": "SilentMask",
+    "name": "침묵의 가면",
+    "speed": 1,
+    "adaptation": 0,
+    "type": 1,
+    "sacrifice": [],
+    "defence": 0,
+    "health": 1,
+    "skill": [
+        {
+            "name": "영원한 침묵",
+            "desc": "적에게 공격 성공시, 이 카드는 소멸하며 대상 카드에게 [침묵] 5를 부여한다.",
+            "bp": 1
+        }
+        
+    ]
+}

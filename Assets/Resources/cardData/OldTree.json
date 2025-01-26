@@ -1,0 +1,17 @@
+{
+    "id": "oldTree",
+    "name": "고목",
+    "speed": 1,
+    "adaptation": 0,
+    "type": 1,
+    "sacrifice": [],
+    "defence": 0,
+    "health": 1,
+    "skill": [
+        {
+            "name": "속박",
+            "desc": "대상 카드에게 [속박] 4|1 부여하고 1의 피해를 준다",
+            "bp": 1
+        }
+    ]
+}
