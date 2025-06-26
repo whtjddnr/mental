@@ -7,15 +7,13 @@ static class PlayerManager {
     public static class BehaviourPoint {
         public static List<GameObject> gameObjects = new List<GameObject>() {};
         public static void Init() {
-            Reset(2);
+            Reset(0);
         }
         public static void Reset(int num) {
             int temp = 0;
             temp += CardGameEngine.game.playerBehaviourPoint;
             CardGameEngine.game.playerBehaviourPoint = num;
             for(int i = 0; i < num-temp; i++) {
-                Debug.Log($"{temp}, {CardGameEngine.game.playerBehaviourPoint}");
-
                 GameObject point = GameObject.Instantiate(
                     Resources.Load<GameObject>($"Prefabs/behaviourPoint"), 
                     new Vector3(0, 0, 0), 
@@ -28,7 +26,6 @@ static class PlayerManager {
                 point.transform.position = new Vector3(x, y, -1);
                 PlayerManager.BehaviourPoint.gameObjects.Add(point);
             }
-            
         }
         public static void Remove(int num) {
             for(int i = 0; i < num; i++) {
@@ -43,7 +40,7 @@ static class PlayerManager {
         private static Sequence shakeSequence;
         private static Transform drewCard;
         public static void Draw(bool skipMotion) {
-            if(!isDrew) {
+            if(!isDrew && CardGameEngine.game.playerDeck.value.Count != 0) {
                 if(playerBehaviour != PlayerBehaviour.drawing) {
                     playerBehaviour = PlayerBehaviour.drawing;
                     Game game = CardGameEngine.game;
@@ -60,7 +57,7 @@ static class PlayerManager {
                                 isDrew = true;
                             } else {
                                 DOTween.Sequence().SetAutoKill(false)
-                                .Join(card.gameObject.transform.DOScale(3, 0)) // 4. 커져라!
+                                .Join(card.gameObject.transform.DOScale(2, 0)) // 4. 커져라!
                                 .Append(card.gameObject.transform.Find("display").DORotate(new Vector3(0, 0, 0), 0)) // 5. 앞면으로 뒤집음
                                 .Append(card.gameObject.transform.DOMoveY(0, 0.5f)) // 6. 올려버려라!
                                 .OnComplete(() => {

@@ -7,11 +7,15 @@
     "sacrifice": [],
     "defence": 0,
     "health": 1,
-    "skill": [
+    "active": [
         {
             "name": "속박",
             "desc": "대상 카드에게 [속박] 4|1 부여하고 1의 피해를 준다",
+            "adaptation": 0,
             "bp": 1
         }
+    ],
+    "passive": [
+        
     ]
 }

@@ -89,13 +89,6 @@ public abstract class Field {
                 obj.GetComponent<Zone>().column = i;
             }
         }
-        // deck zone render
-        // opponent
-        // var opponentDeckZone = GameObject.Instantiate(deckZone, new Vector3(-(5*zoneWidth/2 + zoneWidth*4/4) + (zoneWidth/2) + zoneWidth/4*2 - zoneWidth*2, 0, -2), Quaternion.identity);
-        // opponentDeckZone.AddComponent<DeckZone>();
-        // opponentDeckZone.name = "opponentDeckZone";
-        // opponentDeckZone.GetComponent<DeckZone>().target = Target.opponent;
-        // opponentDeckZone.transform.SetParent(container.transform, false);
         // player
         var deckZone =  Resources.Load<GameObject>($"Prefabs/deckZone");
         var playerDeckZone = GameObject.Instantiate(
@@ -113,14 +106,6 @@ public abstract class Field {
         playerDeckZone.GetComponent<DeckZone>().target = Target.player;
         playerDeckZone.transform.SetParent(container.transform, false);
         
-        // for(var i = 0; i < opponent.deck.value.Count; i++) {
-        //     var card =  opponent.deck.value[i];
-        //     card.location = CardLocation.onDeck;
-        //     card.Render(theme, new Vector3(0, -zoneHeight/130*2*i, -1));
-        //     card.gameObject.transform.rotation = Quaternion.Euler(0, 180, 0);
-        //     card.gameObject.name = $"{i}";
-        //     card.gameObject.transform.SetParent(opponentDeckZone.transform, false);
-        // }
         for(var i = 0; i < Player.deck.value.Count; i++) {
             var card =  Player.deck.value[i];
             card.location = CardLocation.onDeck;
@@ -130,6 +115,5 @@ public abstract class Field {
             card.gameObject.transform.SetParent(playerDeckZone.transform, false);
         }
     }
-    public abstract void Effect();
-    public abstract void TurnStart();
+    public abstract void Effect(GamePhase gamePhase);
 }

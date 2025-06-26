@@ -18,6 +18,8 @@ public class CardComponent : MonoBehaviour
     [HideInInspector] public Quaternion tempRotation;
 
     public bool isDragging;
+    public SkillBlock SkillBlock;
+
     void Start() {
         if(card.location == CardLocation.onHand) {
             this.transform.position = new Vector3();
@@ -27,12 +29,14 @@ public class CardComponent : MonoBehaviour
     void OnMouseEnter() {
         if(!isDragging && PlayerManager.playerBehaviour != PlayerBehaviour.sacrificing) {
             if(card.location == CardLocation.onHand) {
-                tween?.Pause();
-                this.transform.DOScale(2, 0);
-                this.transform.DOLocalRotateQuaternion(new Quaternion(), 0);
-                this.transform.position = new Vector3(this.transform.position.x, this.transform.position.y + this.GetComponent<SpriteRenderer>().size.y, this.transform.position.z-2);
+                if(PlayerManager.playerBehaviour != PlayerBehaviour.draggingCard) {
+                    tween?.Pause();
+                    this.transform.DOScale(2, 0);
+                    this.transform.DOLocalRotateQuaternion(new Quaternion(), 0);
+                    this.transform.position = new Vector3(this.transform.position.x, this.transform.position.y + this.GetComponent<SpriteRenderer>().size.y, this.transform.position.z-2);
+                }
             } else if(card.location == CardLocation.onField) {
-                if(!this.IsSelected()) this.DrawArrow();
+                // if(!this.IsSelected()) this.DrawArrow();
             }
         }
     }
@@ -45,7 +49,7 @@ public class CardComponent : MonoBehaviour
                 this.transform.DOMoveY(tempPos.y, .2f);
                 this.transform.position = new Vector3(this.transform.position.x, this.transform.position.y, tempPos.z);
             } else if(card.location == CardLocation.onField) {
-                if(!this.IsSelected()) this.DestroyArrow();
+                // if(!this.IsSelected()) this.DestroyArrow();
             }
         }
     }
@@ -58,8 +62,6 @@ public class CardComponent : MonoBehaviour
                     if(!IsCardNeedSacrifice()) tween = this.transform.DOScale(1, 0.1f);
                 } else if(card.location == CardLocation.onDeck) {
                     if(card.target == Target.player) PlayerManager.DrawManager.Draw(false);
-                } else if(card.location == CardLocation.onField) {
-                    if(this.card.target == Target.player) this.SelectThisCard();
                 }
             }
         } else if(Input.GetMouseButtonDown(1)) {
@@ -70,18 +72,20 @@ public class CardComponent : MonoBehaviour
             tween?.Pause();
             if(card.location == CardLocation.onHand) {
                 if(PlayerManager.playerBehaviour != PlayerBehaviour.sacrificing) {
+                    if(IsCardNeedSacrifice()) {
+                        if(SkillManager.IsAbleToAddBlock(1)) {
+                            tween = DOTween.Sequence().SetAutoKill(false)
+                                .Append(card.gameObject.transform.DORotate(new Vector3(0, 0, 1), 0.02f))
+                                .Append(card.gameObject.transform.DORotate(new Vector3(0, 0, 0), 0.02f))
+                                .Append(card.gameObject.transform.DORotate(new Vector3(0, 0, -1), 0.02f));
+                            tween.SetLoops(1000);
+                            PlayerManager.SummonsManager.SacrificeSummons(card);
+                        }
+                    } 
                     if(isDragging) {
                         isDragging = false;
-                        if(IsCardNeedSacrifice()) {
-                            if(SkillManager.IsAbleToAddBlock(1)) {
-                                tween = DOTween.Sequence().SetAutoKill(false)
-                                    .Append(card.gameObject.transform.DORotate(new Vector3(0, 0, 1), 0.02f))
-                                    .Append(card.gameObject.transform.DORotate(new Vector3(0, 0, 0), 0.02f))
-                                    .Append(card.gameObject.transform.DORotate(new Vector3(0, 0, -1), 0.02f));
-                                tween.SetLoops(1000);
-                                PlayerManager.SummonsManager.SacrificeSummons(card);
-                            }
-                        } else {
+                        PlayerManager.playerBehaviour = PlayerBehaviour.nothing;
+                        if(!IsCardNeedSacrifice()) {
                             LayerMask ZoneLayer = 1<<6;
                             Vector2 pos = Cam.Instance.Camera.ScreenToWorldPoint(Input.mousePosition);
                             RaycastHit2D hit = Physics2D.Raycast(pos, Vector2.zero, 1f, ZoneLayer);
@@ -89,15 +93,19 @@ public class CardComponent : MonoBehaviour
                                 int zoneRow = hit.transform.GetComponent<Zone>().row;
                                 int zoneColumn = hit.transform.GetComponent<Zone>().column;
                                 Target zoneTarget = hit.transform.GetComponent<Zone>().target;
-                                if(zoneTarget == Target.player) {
-                                    if(CardGameEngine.game.field.playerFieldArrangement[zoneColumn][zoneRow] == null) {
-                                        if(SkillManager.IsAbleToAddBlock(1)) PlayerManager.SummonsManager.Summons(this.card, zoneRow, zoneColumn, false);
-                                        return;
+                                if(zoneTarget == Target.player && CardGameEngine.game.field.playerFieldArrangement[zoneColumn][zoneRow] == null) {
+                                    if(SkillManager.IsAbleToAddBlock(1)) {
+                                        PlayerManager.SummonsManager.Summons(this.card, zoneRow, zoneColumn, false);
+                                    } else {
+                                        ReturnToTempPos();
                                     }
+                                } else {
+                                    ReturnToTempPos();
                                 }
+                            } else {
+                                ReturnToTempPos();
                             }
-                            ReturnToTempPos();
-                        }   
+                        }
                     }
                 }
             } else if(card.location == CardLocation.onField) {
@@ -107,6 +115,8 @@ public class CardComponent : MonoBehaviour
                     this.SetSkillTarget();
                     PlayerManager.playerBehaviour = PlayerBehaviour.nothing;
                     this.UnSelectThisCard();
+                } else {
+                    if(this.card.target == Target.player) this.SelectThisCard();
                 }
             }
         } else if(Input.GetMouseButtonUp(1)) {
@@ -117,6 +127,7 @@ public class CardComponent : MonoBehaviour
         if(card.location == CardLocation.onHand && PlayerManager.playerBehaviour != PlayerBehaviour.sacrificing) {
             if(!IsCardNeedSacrifice()) {
                 isDragging = true;
+                PlayerManager.playerBehaviour = PlayerBehaviour.draggingCard;
             }
         }
     }
@@ -150,8 +161,7 @@ public class CardComponent : MonoBehaviour
             if(card.location == CardLocation.onField) {
                 CardGameEngine.SelectedCard?.gameObject.GetComponent<CardComponent>().UnSelectThisCard();
                 CardGameEngine.SelectedCard = this.card;
-                this.DrawArrow();
-                this.PopSkillBar();
+                SkillBarManager.Show(this.card);
             }
         } 
     }
@@ -160,46 +170,16 @@ public class CardComponent : MonoBehaviour
             if(card.location == CardLocation.onField)
                 if(CardGameEngine.SelectedCard != null)
                     CardGameEngine.SelectedCard = null;
-                    this.DestroyArrow();
-                    this.RemoveSkillBar();
+                    SkillBarManager.Remove();
     }
     private void Sacrificing() {
         PlayerManager.SummonsManager.countOfSacrifice += 1;
-        if(PlayerManager.SummonsManager.targetOfSummonsCard.sacrifice.Count == PlayerManager.SummonsManager.countOfSacrifice) {
+        if(PlayerManager.SummonsManager.targetOfSummonsCard.spec.sacrifice.Count == PlayerManager.SummonsManager.countOfSacrifice) {
             PlayerManager.playerBehaviour = PlayerBehaviour.nothing;
             PlayerManager.SummonsManager.isSacrificingComplete = true;
         }
         CardGameEngine.KillAt(card.target, row, column);
     }
-    private void PopSkillBar() {
-        if(card.target == Target.player) {
-            this.RemoveSkillBar();
-            GameObject skillBarsContainer = new GameObject("skillBars"); // create container
-            skillBarsContainer.transform.position = new Vector3(
-                this.transform.position.x + this.GetComponent<SpriteRenderer>().size.x*3/2, 
-                this.transform.position.y, 
-                this.transform.position.z-1f
-            );
-            for(int i = 0; i < this.card.skill.Count; i++) {
-                GameObject skillBar = GameObject.Instantiate( // create skill bar elements
-                    Resources.Load<GameObject>($"Prefabs/skill"), 
-                    new Vector3(
-                        0, -this.GetComponent<SpriteRenderer>().size.y*(i-1)/2, 0), 
-                    Quaternion.identity
-                );
-                if(this.SkillBlock != null)
-                    if(this.SkillBlock.skill.SkillNumber == i) skillBar.GetComponent<SkillBar>().Select();
-                
-                skillBar.transform.SetParent(skillBarsContainer.transform, false); // set parent that container
-                skillBar.GetComponent<SkillBar>().card = this.card; // init card
-                skillBar.GetComponent<SkillBar>().skillNumber = i; // init skill number
-                JObject skill = (JObject)this.card.skill[i]; // get text
-                skillBar.transform.Find("text").GetComponent<TextMeshPro>().text = $"{skill["name"]}"; // get text
-            }
-            CardGameEngine.PoppedSkillBar = skillBarsContainer; // put PoppedSkillBar that can cancel skill bar
-        }
-    }
-    
     private void PopDescBook() {
         GameObject.Destroy(CardGameEngine.PoppedBook);
         GameObject book = GameObject.Instantiate( // create skill bar elements
@@ -207,54 +187,49 @@ public class CardComponent : MonoBehaviour
             new Vector3(0, 0, -3), 
             Quaternion.identity
         );
-        Book.Instance._name.GetComponent<TextMeshPro>().text = this.card.name;
-        Book.Instance.cardImage.GetComponent<SpriteRenderer>().sprite = Resources.Load<Sprite>($"image/card/default/cardImage/{this.card.id}");
+        Book.Instance._name.GetComponent<TextMeshPro>().text = this.card.spec.name;
+        Book.Instance.cardImage.GetComponent<SpriteRenderer>().sprite = Resources.Load<Sprite>($"image/card/default/cardImage/{this.card.spec.id}");
 
         GameObject[] sacrificeArr = new GameObject[] {Book.Instance.sacrifice0, Book.Instance.sacrifice1, Book.Instance.sacrifice2, Book.Instance.sacrifice3};
-        for(int i = 0; i < this.card.sacrifice.Count; i++) {
-            sacrificeArr[i].GetComponent<SpriteRenderer>().sprite = Resources.Load<Sprite>($"image/card/default/sacrifice/{this.card.sacrifice[0]}");
+        for(int i = 0; i < this.card.spec.sacrifice.Count; i++) {
+            sacrificeArr[i].GetComponent<SpriteRenderer>().sprite = Resources.Load<Sprite>($"image/card/default/sacrifice/{this.card.spec.sacrifice[0]}");
         }
 
-        Book.Instance.type.GetComponent<SpriteRenderer>().sprite = Resources.Load<Sprite>($"image/card/default/type/{this.card.type}"); // 타입
+        Book.Instance.type.GetComponent<SpriteRenderer>().sprite = Resources.Load<Sprite>($"image/card/default/type/{this.card.spec.type}"); // 타입
         // health
-        if(this.card.health < 10) {
-            var numberImage = Resources.Load<Sprite>($"image/number/{this.card.health}");
+        if(this.card.spec.health < 10) {
+            var numberImage = Resources.Load<Sprite>($"image/number/{this.card.spec.health}");
             Book.Instance.heal.GetComponent<SpriteRenderer>().sprite = numberImage;
         } else {
             Transform childTransformHeal1 = Book.Instance.heal2.transform.Find("1");
             Transform childTransformHeal2 = Book.Instance.heal2.transform.Find("2");
-            var numberImage1 = Resources.Load<Sprite>($"image/number/{System.Math.Truncate((double)(this.card.health / 10))}");
-            var numberImage2 = Resources.Load<Sprite>($"image/number/{this.card.health%10}");
+            var numberImage1 = Resources.Load<Sprite>($"image/number/{System.Math.Truncate((double)(this.card.spec.health / 10))}");
+            var numberImage2 = Resources.Load<Sprite>($"image/number/{this.card.spec.health%10}");
             childTransformHeal1.GetComponent<SpriteRenderer>().sprite = numberImage1;
             childTransformHeal2.GetComponent<SpriteRenderer>().sprite = numberImage2;
         }
-        if(this.card.speed < 10) {
-            var numberImage = Resources.Load<Sprite>($"image/number/{this.card.speed}");
+        if(this.card.spec.speed < 10) {
+            var numberImage = Resources.Load<Sprite>($"image/number/{this.card.spec.speed}");
             Book.Instance.speed.GetComponent<SpriteRenderer>().sprite = numberImage;
         } else {
-            var numberImage1 = Resources.Load<Sprite>($"image/number/{System.Math.Truncate((double)(this.card.speed / 10))}");
-            var numberImage2 = Resources.Load<Sprite>($"image/number/{this.card.speed%10}");
+            var numberImage1 = Resources.Load<Sprite>($"image/number/{System.Math.Truncate((double)(this.card.spec.speed / 10))}");
+            var numberImage2 = Resources.Load<Sprite>($"image/number/{this.card.spec.speed%10}");
             Book.Instance.speed2.transform.Find("1").GetComponent<SpriteRenderer>().sprite = numberImage1;
             Book.Instance.speed2.transform.Find("2").GetComponent<SpriteRenderer>().sprite = numberImage2;
         }
         GameObject[] skillNameArr = new GameObject[] {Book.Instance.skill1, Book.Instance.skill2, Book.Instance.skill3};
         GameObject[] skillDescArr = new GameObject[] {Book.Instance.skill1desc, Book.Instance.skill2desc, Book.Instance.skill3desc};
-        for(int i = 0; i < this.card.skill.Count; i++) {
-            JObject skill = (JObject)this.card.skill[i];
+        for(int i = 0; i < this.card.spec.active.Count; i++) {
+            JObject skill = (JObject)this.card.spec.active[i];
             skillNameArr[i].GetComponent<TextMeshPro>().text = (string)skill["name"];
             skillDescArr[i].GetComponent<TextMeshPro>().text = (string)skill["desc"];
         }
         
         CardGameEngine.PoppedBook = book;
     }
-    private void RemoveSkillBar() {
-        if(CardGameEngine.PoppedSkillBar != null) {
-            GameObject.Destroy(CardGameEngine.PoppedSkillBar);
-        }
-    }
-    public SkillBlock SkillBlock;
     public void SetSkill(int skillNumber) {
         SkillManager.RemoveBlock(SkillBlock); // 이 카드의 스킬이 이미 선택되어 있다면 지워버림
+        this.SkillBlock = null;
         Active selectedSkill = this.card.skillBundle.Actives[skillNumber];
         if(SkillManager.IsAbleToAddBlock(selectedSkill.ConsumableBp)) {
             SkillBlock block = new SkillBlock(this.card, selectedSkill);
@@ -264,34 +239,20 @@ public class CardComponent : MonoBehaviour
                 this.UnSelectThisCard();
             } else {
                 PlayerManager.playerBehaviour = PlayerBehaviour.selectSkillTarget;
+                ArrowObj.Instance.Arrow.GetComponent<Arrow>().Show(this.transform.position);
             }
-            this.RemoveSkillBar();
+            SkillBarManager.Remove();
         }
     }
     private void SetSkillTarget() {
         if(CardGameEngine.SelectedCard != null) {
+            ArrowObj.Instance.Arrow.GetComponent<Arrow>().Hide();
             CardGameEngine.SelectedCard.gameObject.GetComponent<CardComponent>().SkillBlock.skill.SetTarget(this.card);
             SkillManager.AddBlock(CardGameEngine.SelectedCard.gameObject.GetComponent<CardComponent>().SkillBlock);
         }
     }
-    public GameObject arrow;
-    private void DrawArrow() {
-        if(this.SkillBlock?.skill.Target != null) {
-            this.DestroyArrow();
-            GameObject arrow = GameObject.Instantiate(
-                Resources.Load<GameObject>($"Prefabs/arrow"), 
-                new Vector3(0, 0, this.card.gameObject.transform.position.z-1), 
-                Quaternion.identity
-            );
-            arrow.GetComponent<Arrow>().DrawArrow(this.gameObject.transform.position, this.SkillBlock.skill.Target.gameObject.transform.position);
-            this.arrow = arrow;
-        }
-    }
-    private void DestroyArrow() {
-        if(this.arrow) GameObject.Destroy(this.arrow);
-    }
     private bool IsCardNeedSacrifice() {
-        return this.card.sacrifice.Count > 0;
+        return this.card.spec.sacrifice.Count > 0;
     }
 
 }

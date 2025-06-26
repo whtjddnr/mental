@@ -18,7 +18,9 @@ public abstract class State {
     }
     public Card card;
     public int Count;
-    abstract public bool isStatic { get; }
+    public int X;
+    abstract public bool IsVariableState { get; }
+    abstract public bool IsStatic { get; }
     abstract public string Id { get; }
     abstract public string Name { get; }
     abstract public string Description { get; }
@@ -29,6 +31,15 @@ public abstract class State {
         Count -= count;
         if(Count <= 0) {
             card.states.value.Remove(this);
+        }
+    }
+    public void IncreaseVariable(int x) {
+        X += x;
+    }
+    public void DecreaseVariable(int x) {
+        X -= x;
+        if(X <= 0) {
+            X = 0;
         }
     }
     abstract public StateActTiming When { get; }

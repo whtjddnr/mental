@@ -4,12 +4,13 @@ class DefaultField : Field
     {
     }
 
-    public override void Effect()
-    {
-        
+    public override void Effect(GamePhase gamePhase) {
+        if(gamePhase == GamePhase.turnBegin) {
+            TurnStart();
+        }
     }
 
-    public override void TurnStart()
+    public void TurnStart()
     {
         foreach(var arr in CardGameEngine.game.field.opponentFieldArrangement) {
             foreach(var card in arr) {

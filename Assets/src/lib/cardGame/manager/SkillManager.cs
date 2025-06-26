@@ -14,10 +14,10 @@ public class SkillBlock : IComparable {
     public int CompareTo(object obj)
     {
         // 비교 대상의 속도 보다 크면 -1을 반환	
-        if (this.card.speed > (obj as SkillBlock).card.speed)
+        if (this.card.spec.speed > (obj as SkillBlock).card.spec.speed)
             return -1;
         // 비교 대상의 속도와 같으면 0을 반환
-        else if (this.card.speed == (obj as SkillBlock).card.speed)
+        else if (this.card.spec.speed == (obj as SkillBlock).card.spec.speed)
             return 0;
         // 비교 대상의 속도 보다 작으면 1을 반환
         else
@@ -47,8 +47,11 @@ public static class SkillManager {
         // }
     }
     public static void RemoveBlock(SkillBlock block) {
-        skillBlocks.Remove(block);
-        Debug.Log("Remove skill block: " + $"{(int)skillBlocks.Count}");
+        if(skillBlocks.Exists(x => x == block)) {
+            skillBlocks.Remove(block);
+            totalConsumableBp -= block.skill.ConsumableBp;
+            Debug.Log("Remove skill block: " + $"{(int)skillBlocks.Count}");
+        }
     }
     public static async Task Active() {
         skillBlocks.Sort();
@@ -65,7 +68,7 @@ public static class SkillManager {
     }
     public static void SetSameTime(int index) {
         if(skillBlocks.Count >= index+1+1) {
-            if(skillBlocks[index].card.speed == skillBlocks[index+1].card.speed) {
+            if(skillBlocks[index].card.spec.speed == skillBlocks[index+1].card.spec.speed) {
                 skillBlocks[index].skill.IsSameTimeSkill = true;
                 skillBlocks[index+1].skill.IsSameTimeSkill = true;
                 SetSameTime(index+1);
@@ -73,17 +76,7 @@ public static class SkillManager {
         }
     }
     public static SkillBundle CreateSkillBundle(Card ownerCard) {
-        SkillBundle result;
-        string cardId = ownerCard.id;
-        if(cardId == "bird") result = new Bird(ownerCard);
-        else if(cardId == "fish") result = new Fish(ownerCard);
-        else if(cardId == "shark") result = new Shark(ownerCard);
-        else if(cardId == "test") result = new Test(ownerCard);
-        else if(cardId == "bush") result = new Bush(ownerCard);
-        else if(cardId == "oldTree") result = new OldTree(ownerCard);
-        else if(cardId == "snake") result = new Snake(ownerCard);
-        else if(cardId == "lion") result = new Lion(ownerCard);
-        else result = new Bird(ownerCard);
+        SkillBundle result = SkillDictionary.Get(ownerCard);
         return result;
     }
 }

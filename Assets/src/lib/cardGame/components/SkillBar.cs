@@ -8,7 +8,18 @@ public class SkillBar : MonoBehaviour {
     public void Select() {
         this.transform.Find("selected").gameObject.SetActive(true);
     }
-    void OnMouseUp() {
-        card.gameObject.GetComponent<CardComponent>().SetSkill(this.skillNumber);
+    void OnMouseEnter() {
+        
+    }
+    void OnMouseOver() {
+        if(Input.GetMouseButtonUp(0)) {
+            if(card.spec.adaptation >= card.skillBundle.Actives[this.skillNumber].RequiredAdaptation) {
+                card.gameObject.GetComponent<CardComponent>().SetSkill(this.skillNumber);
+            }
+        } else if(Input.GetMouseButtonUp(1)) {
+            SkillManager.RemoveBlock(card.gameObject.GetComponent<CardComponent>().SkillBlock);
+            card.gameObject.GetComponent<CardComponent>().SkillBlock = null;
+            SkillBarManager.Remove();
+        }
     }
 }

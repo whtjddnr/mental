@@ -7,10 +7,15 @@
     "sacrifice": [],
     "defence": 0,
     "health": 15,
-    "skill": [
+    "active": [
         {
             "name": "공격",
-            "desc": "적에게 1의 피해를 준다."
+            "desc": "적에게 1의 피해를 준다.",
+            "adaptation": 0,
+            "bp": 1
         }
+    ],
+    "passive": [
+        
     ]
 }

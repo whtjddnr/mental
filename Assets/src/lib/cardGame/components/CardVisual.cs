@@ -11,7 +11,7 @@ public class CardVisual: MonoBehaviour
     [Header("References")]
     public Transform visualShadow;
     private float shadowOffset = 0.1f;
-    private Vector2 shadowDistance;
+    private Vector3 shadowDistance;
 
     [Header("Rotation Parameters")]
     [SerializeField] private float rotationAmount = 2;
@@ -24,7 +24,7 @@ public class CardVisual: MonoBehaviour
         if(parentCard.card.location == CardLocation.onHand) Shadow();
     }
     void OnMouseUp() {
-        visualShadow.localPosition = shadowDistance;
+        if(parentCard.card.location == CardLocation.onHand) ReturnPosShadow();
     }
     void Update() {
         if (parentCard == null) return;
@@ -50,5 +50,8 @@ public class CardVisual: MonoBehaviour
     }
     private void Shadow() {
         visualShadow.localPosition += (-Vector3.up * shadowOffset);
+    }
+    public void ReturnPosShadow() {
+        visualShadow.localPosition = shadowDistance;
     }
 }

@@ -4,10 +4,12 @@ using UnityEngine;
 public static class OpponentManager {
     public static class BehaviourPoint {
         public static void Init() {
-            Add(3);
+            Reset(0);
         }
-        public static void Add(int num) {
-            for(int i = 0; i < num; i++) { CardGameEngine.game.opponentBehaviourPoint += 1; }
+        public static void Reset(int num) {
+            int temp = 0;
+            temp += CardGameEngine.game.opponentBehaviourPoint;
+            CardGameEngine.game.opponentBehaviourPoint = num;
         }
         public static void Remove(int num) {
             for(int i = 0; i < num; i++) { CardGameEngine.game.opponentBehaviourPoint -= 1; }
@@ -42,7 +44,7 @@ public static class OpponentManager {
             if(CardGameEngine.game.opponentHand.value.Count == 0) return;
             Card card = CardGameEngine.game.opponentHand.value[0];
             Debug.Log(CardGameEngine.game.opponentHand.value.Count);
-            if(card.sacrifice.Count == 0) {
+            if(card.spec.sacrifice.Count == 0) {
                 for(int n = 0; n < CardGameEngine.game.field.opponentFieldConstruction.Length; n++) {
                     for(int t = 0; t < CardGameEngine.game.field.opponentFieldConstruction[n]; t++) {
                         if(CardGameEngine.game.field.opponentFieldArrangement[n][t] == null) {

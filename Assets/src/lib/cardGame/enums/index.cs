@@ -3,12 +3,14 @@ public enum Target {
   player
 }
 public enum CardLocation {
+  unknown,
   onDeck,
   onHand,
   onField
 }
 public enum PlayerBehaviour {
   nothing,
+  draggingCard,
   selectCard,
   drawing,
   summoning,
